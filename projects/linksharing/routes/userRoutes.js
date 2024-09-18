@@ -6,5 +6,6 @@ const { validateLogin, handleValidationErrors } = require('../validation/login')
 
 router.post('/register', userController.register);
 router.post('/login', loginLimiter, validateLogin, handleValidationErrors , userController.login);
+router.put('/update', userController.update);
 
 module.exports = router

@@ -55,3 +55,42 @@ exports.login = async (req, res, next) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+exports.update = async (req, res, next) => {
+    const { firstName, lastName, currentEmail, email } = req.body;
+
+    try {
+        if (email && email !== currentEmail) {
+            const checkEmail = await User.findOne({ email: email });
+            if (checkEmail) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
+        }
+
+        const user = await User.findOne({ email: currentEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'Cannot find user' });
+        }
+
+        const updateFields = {
+            firstName: firstName,
+            lastName: lastName
+        };
+        if (email) {
+            updateFields.email = email;
+        }
+
+        const updateResult = await User.updateOne(
+            { _id: user._id },
+            { $set: updateFields }
+        );
+        if (updateResult.modifiedCount === 0) {
+            return res.status(400).json({ message: 'User update failed' });
+        }
+
+        res.status(200).json({ message: 'User updated successfully' });
+    } catch (error) {
+        console.error('Cannot update user', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
