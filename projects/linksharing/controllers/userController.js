@@ -88,9 +88,39 @@ exports.update = async (req, res, next) => {
             return res.status(400).json({ message: 'User update failed' });
         }
 
-        res.status(200).json({ message: 'User updated successfully' });
+        res.status(200).json({ message: 'User updated successfully', user: updateFields });
     } catch (error) {
         console.error('Cannot update user', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+
+exports.img = async (req, res, next) => {
+    const { url, currentEmail } = req.body;
+
+    console.log('Received URL:', url);
+
+    try {
+        const user = await User.findOne({ email: currentEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'Cannot find user' });
+        }
+
+        if (user.img !== url) {
+            const updatedUser = await User.findByIdAndUpdate(
+                user._id,
+                { img: url },
+                { new: true }
+            );
+
+            console.log('Updated User:', updatedUser);
+
+            return res.status(200).json({ message: 'Successfully updated image', img: updatedUser.img });
+        }
+
+        return res.status(200).json({ message: 'No update necessary, img is the same', img: url });
+    } catch (error) {
+        console.error('Cannot update img link', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
